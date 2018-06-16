@@ -4,3 +4,5 @@ data/System/VarEXAMPLETAG.txt 0644 Tag documentation
 data/Sandbox/PluginTestDrawIOPlugin.txt 0644 Examples
 lib/Foswiki/Plugins/DrawIOPlugin.pm 0444 Perl module
 lib/Foswiki/Plugins/DrawIOPlugin/Config.spec 0444 Configuration
+pub/System/DrawIOPlugin/scripts/drawioplugin.js 0444
+Foswiki::Plugins::JQueryPlugin,>4.02,perl,Required
