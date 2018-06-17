@@ -65,7 +65,11 @@ sub _DRAWIO {
     $encdata = MIME::Base64::encode_base64($data);
     $encdata =~ s{\n}{}g; # delete new lines
   }
-  my $result = CGI::img({'src' => "data:image/svg+xml;base64," . $encdata,
+  # In theory we could use ATTACHURLPATH and have the JS fetch it and then pass it to Draw.IO,
+  # however this fails due to CORS checks by the browser which require the server to add
+  # CORS headers. Instead we use data URIs which bloat the HTML
+  my $src = "data:image/svg+xml;base64," . $encdata;
+  my $result = CGI::img({'src' => $src,
 			 'class' => "drawio",
 			 'filename' => $drawingName,
 			 'validation-key' => "?%NONCE%>",
