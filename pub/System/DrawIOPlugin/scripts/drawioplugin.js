@@ -13,7 +13,8 @@ $(function() {
 	    // Received if the editor is ready
 	    if (msg.event == 'init') {
 	      // Sends the data URI with embedded XML to editor
-	      source.drawIoWindow.postMessage(JSON.stringify({action: 'load', xml: source.getAttribute('src')}), '*');
+	      var data = source.getAttribute('src');
+	      source.drawIoWindow.postMessage(JSON.stringify({action: 'load', xml: data}), '*');
 	    }
 	    // Received if the user clicks save
 	    else if (msg.event == 'save') {
@@ -26,15 +27,22 @@ $(function() {
 	    else if (msg.event == 'export') {
 	      console.log('exporting');
 	      var params = {
-		validation_key : source.getAttribute('validation-key'),
 		filename : source.getAttribute('filename'),
 		_web : foswiki.getPreference('WEB'),
 		_topic : foswiki.getPreference('TOPIC'),
 		data : msg.data,
 	      };
-	      $.post(foswiki.getScriptUrl('rest', 'DrawIOPlugin', 'upload'), params).done(function() {
+	      if (typeof(StrikeOne) !== 'undefined') {
+		var key = source.getAttribute('data-validation-key');
+		var key1 = StrikeOne.calculateNewKey(key);
+		console.log('Transformed ' + key + ' to ' + key1);
+		params['data-validation-key'] = key1;
+	      }
+	      $.post(foswiki.getScriptUrl('rest', 'DrawIOPlugin', 'upload'), params).done(function(data, textStatus, jqXHR) {
 		alert('upload done');
-	      }).fail(function() {
+		// XXX: new nonce is null..
+		//console.log('new nonce ' + jqXHR.getResponseHeader('X-Foswiki-Validation'));
+	      }).fail(function(jqXHR, textStatus, errorThrown) {
 		alert('failed to upload');
 	      });
 	      // Updates the data URI of the image

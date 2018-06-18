@@ -65,6 +65,7 @@ sub _DRAWIO {
     $encdata = MIME::Base64::encode_base64($data);
     $encdata =~ s{\n}{}g; # delete new lines
   }
+
   # In theory we could use ATTACHURLPATH and have the JS fetch it and then pass it to Draw.IO,
   # however this fails due to CORS checks by the browser which require the server to add
   # CORS headers. Instead we use data URIs which bloat the HTML
@@ -72,7 +73,7 @@ sub _DRAWIO {
   my $result = CGI::img({'src' => $src,
 			 'class' => "drawio",
 			 'filename' => $drawingName,
-			 'validation-key' => "?%NONCE%>",
+			 'data-validation-key' => "?%NONCE%>",
 			});
 
     Foswiki::Func::addToZone('script', 'DrawIOPlugin/drawioplugin.js', <<JS, 'JQUERYPLUGIN::FOSWIKI');
@@ -92,10 +93,10 @@ sub _restUpload {
 
   if ($Foswiki::cfg{Validation}{Method} eq 'strikeone') {
     require Foswiki::Validation;
-    my $nonce = $query->param('validation_key');
+    my $nonce = $query->param('data-validation-key');
     if (!defined($nonce) ||
 	!Foswiki::Validation::isValidNonce($session->getCGISession(), $nonce)) {
-      print STDERR "incorrect validation key, continuing anyway\n";
+      print STDERR "incorrect validation key \"$nonce\", continuing anyway\n";
       #returnRESTResult($response, 403, "Incorrect validation key");
       #return;
     }
