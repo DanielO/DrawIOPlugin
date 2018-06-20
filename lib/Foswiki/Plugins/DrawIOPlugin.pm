@@ -8,8 +8,6 @@
 https://github.com/DanielO/DrawIOPlugin
 
 =cut
-use MIME::Base64 ();
-use Data::Dumper ();
 
 package Foswiki::Plugins::DrawIOPlugin;
 
