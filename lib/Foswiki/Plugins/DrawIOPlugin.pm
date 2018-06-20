@@ -62,7 +62,7 @@ sub _DRAWIO {
   my $result = CGI::img({'src' => "%ATTACHURLPATH%/$drawingName",
 			 'class' => "drawio",
 			 'filename' => $drawingName,
-			 'data-validation-key' => "?%NONCE%>",
+			 'data-validation-key' => "?%NONCE%",
 			});
 
     Foswiki::Func::addToZone('script', 'DrawIOPlugin/drawioplugin.js', <<JS, 'JQUERYPLUGIN::FOSWIKI');
@@ -85,9 +85,8 @@ sub _restUpload {
     my $nonce = $query->param('data-validation-key');
     if (!defined($nonce) ||
 	!Foswiki::Validation::isValidNonce($session->getCGISession(), $nonce)) {
-      print STDERR "incorrect validation key \"$nonce\", continuing anyway\n";
-      #returnRESTResult($response, 403, "Incorrect validation key");
-      #return;
+      returnRESTResult($response, 403, "Incorrect validation key");
+      return;
     }
   }
 
