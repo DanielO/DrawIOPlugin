@@ -57,7 +57,34 @@ $(function() {
 		// XXX: new nonce is null..
 		//console.log('new nonce ' + jqXHR.getResponseHeader('X-Foswiki-Validation'));
 	      }).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('failed to upload');
+		// Failed to upload, get the browser to save the file to rescue user effort.
+		// https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
+		  var byteString;
+		if (msg.data.split(',')[0].indexOf('base64') >= 0)
+		  byteString = atob(msg.data.split(',')[1]);
+		else
+		  byteString = unescape(msg.data.split(',')[1]);
+
+		// separate out the mime component
+		var mimeString = msg.data.split(',')[0].split(':')[1].split(';')[0];
+
+		var file = new Blob([byteString], {type: mimeString});
+		if (window.navigator.msSaveOrOpenBlob) // IE10+
+		  window.navigator.msSaveOrOpenBlob(file, source.getAttribute('filename'));
+		else { // Others
+		  var a = document.createElement("a"),
+                      url = URL.createObjectURL(file);
+		  a.href = url;
+		  a.download = source.getAttribute('filename');
+		  document.body.appendChild(a);
+		  a.click();
+		  setTimeout(function() {
+		    document.body.removeChild(a);
+		    window.URL.revokeObjectURL(url);
+		  }, 0);
+		}
+
+		alert('Saving file locally - failed to upload: ' + jqXHR.responseText);
 	      });
 	    }
 
