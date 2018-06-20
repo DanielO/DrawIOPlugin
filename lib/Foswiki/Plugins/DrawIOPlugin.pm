@@ -43,13 +43,6 @@ sub initPlugin {
     return 0;
   }
   Foswiki::Func::registerTagHandler('DRAWIO', \&_DRAWIO);
-  Foswiki::Func::registerRESTHandler('upload',
-				     \&_restUpload,
-				     authenticate => 1,	# Set to 0 if handler should be useable by WikiGuest
-				     validate     => 0,	# Set to 0 to disable StrikeOne CSRF protection
-				     http_allow => 'POST', # Set to 'GET,POST' to allow use HTTP GET and POST
-				     description => 'Upload handler for DrawIO'
-				    );
 
   return 1;
 }
@@ -69,104 +62,6 @@ sub _DRAWIO {
 <script type="text/javascript" src="%PUBURL%/%SYSTEMWEB%/DrawIOPlugin/scripts/drawioplugin.js"></script>
 JS
   return $result;
-}
-
-sub begins_with {
-    return substr($_[0], 0, length($_[1])) eq $_[1];
-}
-
-sub _restUpload {
-  my ($session, $plugin, $verb, $response) = @_;
-  my $query = Foswiki::Func::getCgiQuery();
-  #print STDERR "_restUpload called - " . Data::Dumper->Dump([$query]) . "\n";
-
-  if ($Foswiki::cfg{Validation}{Method} eq 'strikeone') {
-    require Foswiki::Validation;
-    my $nonce = $query->param('data-validation-key');
-    if (!defined($nonce) ||
-	!Foswiki::Validation::isValidNonce($session->getCGISession(), $nonce)) {
-      returnRESTResult($response, 403, "Incorrect validation key");
-      return;
-    }
-  }
-
-  my $web = $query->param('_web');
-  unless ($web) {
-    returnRESTResult($response, 400, 'no web');
-    return;
-  };
-  my $topic = $query->param('_topic');
-  unless ($topic) {
-    returnRESTResult($response, 400, 'no topic');
-    return;
-  };
-  my $fileName = $query->param('filename');
-  unless ($fileName) {
-    returnRESTResult($response, 400, 'no filename');
-    return;
-  };
-  my $origName = $fileName;
-  #print STDERR "fileName $fileName\n";
-
-  # SMELL: call to unpublished function
-  ($fileName, $origName) =
-    Foswiki::Sandbox::sanitizeAttachmentName($fileName);
-  #print STDERR "sanitised fileName $fileName\n";
-
-  my $content = $query->param('data');
-  unless ($content) {
-    returnRESTResult($response, 400, 'no data');
-    return;
-  }
-
-  my $prefix = "data:image/svg+xml;base64,";
-  if (!begins_with($content, $prefix)) {
-    returnRESTResult($response, 400, 'invalid data');
-    return;
-  }
-
-  $content = MIME::Base64::decode_base64(substr($content, length($prefix)));
-  if (!defined($content) || length($content) < 100) {
-    returnRESTResult($response, 400, 'unable to decode data');
-    return;
-  }
-
-  my $ft = new File::Temp();	# will be unlinked on destroy
-  my $fn = $ft->filename();
-  binmode($ft);
-  print $ft $content;
-  close($ft);
-  #print STDERR "Writing to $web $topic $fileName\n";
-  my $error = Foswiki::Func::saveAttachment(
-					    $web, $topic,
-					    $fileName,
-					    {
-					     dontlog  => !$Foswiki::cfg{Log}{upload},
-					     hide     => 0,
-					     filedate => time(),
-					     file     => $fn,
-					     filesize => length($content),
-					    }
-					   );
-  if ($error) {
-    #print STDERR "Unable to save - $error";
-    returnRESTResult($response, 500, $error);
-  }
-
-  returnRESTResult($response, 200, 'OK');
-}
-
-sub returnRESTResult {
-  my ($response, $status, $text) = @_;
-
-  $response->header(
-		    -status  => $status,
-		    -type    => 'text/plain',
-		    -charset => 'UTF-8'
-		   );
-  $response->print($text);
-
-  print STDERR $text if ($status >= 400);
 }
 
 1;

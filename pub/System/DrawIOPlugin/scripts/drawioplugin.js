@@ -12,7 +12,7 @@ $(function() {
 
 	    // Received if the editor is ready
 	    if (msg.event == 'init') {
-	      // Sends the data URI with embedded XML to editor
+	      // Fetch image, convert to a data URI and pass to the editor
 	      var dataurl = source.getAttribute('src');
 	      // hard won knowledge from http://stackoverflow.com/questions/20035615/using-raw-image-data-from-ajax-request-for-data-uri
 	      // via David Benson <davidjgraph@gmail.com>
@@ -30,43 +30,57 @@ $(function() {
 	    }
 	    // Received if the user clicks save
 	    else if (msg.event == 'save') {
-	      console.log('saving');
-	      // Sends a request to export the diagram as XML with embedded SVG
+	      // Sends a request to export the diagram as SVG with embedded XML
 	      source.drawIoWindow.postMessage(JSON.stringify(
 		{action: 'export', format: 'xmlsvg', spinKey: 'saving'}), '*');
 	    }
 	    // Received if the export request was processed
 	    else if (msg.event == 'export') {
-	      console.log('exporting');
-	      var params = {
-		filename : source.getAttribute('filename'),
-		_web : foswiki.getPreference('WEB'),
-		_topic : foswiki.getPreference('TOPIC'),
-		data : msg.data,
-	      };
+	      // Construct form to upload file
+	      var filename = source.getAttribute('filename');
+	      var formData = new FormData();
+	      formData.append('noredirect', 1);
 	      if (typeof(StrikeOne) !== 'undefined') {
 		var key = source.getAttribute('data-validation-key');
 		var key1 = StrikeOne.calculateNewKey(key);
-		console.log('Transformed ' + key + ' to ' + key1);
-		params['data-validation-key'] = key1;
+		formData.append('validation_key', key1);
 	      }
-	      $.post(foswiki.getScriptUrl('rest', 'DrawIOPlugin', 'upload'), params).done(function(data, textStatus, jqXHR) {
+	      // Decode file data from Draw.IO
+	      var byteString;
+	      if (msg.data.split(',')[0].indexOf('base64') >= 0)
+		byteString = atob(msg.data.split(',')[1]);
+	      else
+		byteString = unescape(msg.data.split(',')[1]);
+
+	      // separate out the mime component
+	      var mimeString = msg.data.split(',')[0].split(':')[1].split(';')[0];
+
+	      // Create blob to hold data
+	      var file = new Blob([byteString], {type: mimeString});
+	      formData.append('filepath', file, filename);
+
+	      var url = foswiki.getScriptUrl(
+                'upload',
+                foswiki.getPreference('WEB'),
+                foswiki.getPreference('TOPIC'));
+
+	      // Actually to the upload
+              $.post({
+		url : url,
+		data: formData,
+		mimeType:"multipart/form-data",
+                contentType: false, // to protect multipart
+                processData: false,
+                cache: false
+	      }).done(function(data, textStatus, jqXHR) {
 		// Force existing image to be reloaded
 		source.setAttribute('src', source.getAttribute('src') + '?' + new Date().getTime());
+		// Extract new validation key and update our copy
+		source.setAttribute('data-validation-key', '?' + jqXHR.getResponseHeader('x-foswiki-validation'));
 	      }).fail(function(jqXHR, textStatus, errorThrown) {
 		// Failed to upload, get the browser to save the file to rescue user effort.
 		// https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
 		// https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
-		var byteString;
-		if (msg.data.split(',')[0].indexOf('base64') >= 0)
-		  byteString = atob(msg.data.split(',')[1]);
-		else
-		  byteString = unescape(msg.data.split(',')[1]);
-
-		// separate out the mime component
-		var mimeString = msg.data.split(',')[0].split(':')[1].split(';')[0];
-
-		var file = new Blob([byteString], {type: mimeString});
 		if (window.navigator.msSaveOrOpenBlob) // IE10+
 		  window.navigator.msSaveOrOpenBlob(file, source.getAttribute('filename'));
 		else { // Others
@@ -88,7 +102,6 @@ $(function() {
 
 	    // Received if the user clicks exit or after export
 	    if (msg.event == 'exit' || msg.event == 'export') {
-	      console.log('exiting');
 	      // Closes the editor
 	      window.removeEventListener('message', receive);
 	      source.drawIoWindow.close();
