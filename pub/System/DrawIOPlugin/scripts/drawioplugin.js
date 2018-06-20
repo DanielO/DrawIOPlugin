@@ -53,9 +53,6 @@ $(function() {
 	      $.post(foswiki.getScriptUrl('rest', 'DrawIOPlugin', 'upload'), params).done(function(data, textStatus, jqXHR) {
 		// Force existing image to be reloaded
 		source.setAttribute('src', source.getAttribute('src') + '?' + new Date().getTime());
-		alert('upload done');
-		// XXX: new nonce is null..
-		//console.log('new nonce ' + jqXHR.getResponseHeader('X-Foswiki-Validation'));
 	      }).fail(function(jqXHR, textStatus, errorThrown) {
 		// Failed to upload, get the browser to save the file to rescue user effort.
 		// https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
