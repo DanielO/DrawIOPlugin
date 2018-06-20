@@ -59,18 +59,7 @@ sub _DRAWIO {
   my $drawingName = $attributes->{_DEFAULT} || 'untitled';
   $drawingName = (Foswiki::Func::sanitizeAttachmentName($drawingName))[0];
 
-  my $encdata = "";
-  if (Foswiki::Func::attachmentExists($web, $topic, $drawingName)) {
-    my $data = Foswiki::Func::readAttachment($web, $topic, $drawingName);
-    $encdata = MIME::Base64::encode_base64($data);
-    $encdata =~ s{\n}{}g; # delete new lines
-  }
-
-  # In theory we could use ATTACHURLPATH and have the JS fetch it and then pass it to Draw.IO,
-  # however this fails due to CORS checks by the browser which require the server to add
-  # CORS headers. Instead we use data URIs which bloat the HTML
-  my $src = "data:image/svg+xml;base64," . $encdata;
-  my $result = CGI::img({'src' => $src,
+  my $result = CGI::img({'src' => "%ATTACHURLPATH%/$drawingName",
 			 'class' => "drawio",
 			 'filename' => $drawingName,
 			 'data-validation-key' => "?%NONCE%>",

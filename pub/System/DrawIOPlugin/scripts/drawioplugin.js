@@ -13,8 +13,20 @@ $(function() {
 	    // Received if the editor is ready
 	    if (msg.event == 'init') {
 	      // Sends the data URI with embedded XML to editor
-	      var data = source.getAttribute('src');
-	      source.drawIoWindow.postMessage(JSON.stringify({action: 'load', xml: data}), '*');
+	      var dataurl = source.getAttribute('src');
+	      // hard won knowledge from http://stackoverflow.com/questions/20035615/using-raw-image-data-from-ajax-request-for-data-uri
+	      // via David Benson <davidjgraph@gmail.com>
+	      var xmlHTTP = new XMLHttpRequest();
+	      xmlHTTP.open('GET', dataurl, true);
+	      xmlHTTP.responseType = 'arraybuffer';
+	      xmlHTTP.onload = function(e) {
+		var arr = new Uint8Array(this.response);
+		var raw = String.fromCharCode.apply(null, arr);
+		var b64 = btoa(raw);
+		var dataURI = "data:image/svg+xml;base64," + b64;
+		source.drawIoWindow.postMessage(JSON.stringify({action: 'load', xml: dataURI}), '*');
+	      };
+	      xmlHTTP.send();
 	    }
 	    // Received if the user clicks save
 	    else if (msg.event == 'save') {
@@ -39,14 +51,14 @@ $(function() {
 		params['data-validation-key'] = key1;
 	      }
 	      $.post(foswiki.getScriptUrl('rest', 'DrawIOPlugin', 'upload'), params).done(function(data, textStatus, jqXHR) {
+		// Force existing image to be reloaded
+		source.setAttribute('src', source.getAttribute('src') + '?' + new Date().getTime());
 		alert('upload done');
 		// XXX: new nonce is null..
 		//console.log('new nonce ' + jqXHR.getResponseHeader('X-Foswiki-Validation'));
 	      }).fail(function(jqXHR, textStatus, errorThrown) {
 		alert('failed to upload');
 	      });
-	      // Updates the data URI of the image
-	      source.setAttribute('src', msg.data);
 	    }
 
 	    // Received if the user clicks exit or after export
