@@ -59,7 +59,7 @@ $(function() {
 	      }).fail(function(jqXHR, textStatus, errorThrown) {
 		// Failed to upload, get the browser to save the file to rescue user effort.
 		// https://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
-		  var byteString;
+		var byteString;
 		if (msg.data.split(',')[0].indexOf('base64') >= 0)
 		  byteString = atob(msg.data.split(',')[1]);
 		else
