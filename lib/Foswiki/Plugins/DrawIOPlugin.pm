@@ -27,7 +27,7 @@ our $NO_PREFS_IN_TOPIC = 1;
 
 =cut
 sub initPlugin {
-  my ( $topic, $web, $user, $installWeb ) = @_;
+  my ($topic, $web, $user, $installWeb) = @_;
   # check for Plugins.pm versions
   if ($Foswiki::Plugins::VERSION < 2.3) {
     Foswiki::Func::writeWarning( 'Version mismatch between ',
@@ -40,6 +40,13 @@ sub initPlugin {
 			       );
     return 0;
   }
+
+  unless ($Foswiki::cfg{Plugins}{DrawIOPlugin}{EditURL}) {
+    Foswiki::Func::writeWarning(
+				"DrawIOPlugin is enabled but EditURL is undefined.");
+    return 0;
+  }
+
   Foswiki::Func::registerTagHandler('DRAWIO', \&_DRAWIO);
 
   return 1;
@@ -53,6 +60,7 @@ sub _DRAWIO {
   my $result = CGI::img({'src' => "%ATTACHURLPATH%/$drawingName",
 			 'class' => "drawio",
 			 'filename' => $drawingName,
+			 'drawio-url' => $Foswiki::cfg{Plugins}{DrawIOPlugin}{EditURL},
 			 'data-validation-key' => "?%NONCE%",
 			});
 
