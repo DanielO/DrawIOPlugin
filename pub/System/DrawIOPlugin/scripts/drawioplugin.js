@@ -1,4 +1,4 @@
-$(function() {
+(function($) {
   document.addEventListener('dblclick', function(evt) {
     var url = 'https://www.draw.io/?embed=1&ui=atlas&spin=1&modified=unsavedChanges&proto=json';
     var source = evt.srcElement || evt.target;
@@ -120,4 +120,4 @@ $(function() {
       }
     }
   });
-});
+})(jQuery);
