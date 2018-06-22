@@ -1,0 +1,39 @@
+%META:TOPICINFO{author="ProjectContributor" date="1457496285" format="1.1" version="1"}%
+%META:TOPICPARENT{name="Plugins"}%
+---+!! Draw.IO Plugin
+%FORMFIELD{"Description"}%
+
+%TOC%
+
+Embed Draw.IO diagrams in topics and allow the user to edit them directly in the browser.
+
+---++ Preferences
+
+Plugin preferences should be set using =configure=, as described in
+%SYSTEMWEB%.DevelopingPlugins.
+
+The only setting currently used is the URL to edit diagrams with. The default should work unless you need to be self hosted (YMMV).
+
+---++ Installation
+%$INSTALL_INSTRUCTIONS%
+
+---++ Dependencies
+%$DEPENDENCIES%
+
+Draw.IO and the Javascript for this plugin require a modern browser. Displaying the diagrams required one capable of SVG.
+
+---++ Change History
+%TABLE{columnwidths="7em" tablewidth="100%"}%
+|1.0|Initial Release|
+
+%META:FORM{name="PackageForm"}%
+%META:FIELD{name="Author" title="Author" value="Daniel O'Connor <doconnor@gsoft.com.au>"}%
+%META:FIELD{name="Version" title="Version" value="%25$VERSION%25"}%
+%META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
+%META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
+%META:FIELD{name="Copyright" value="2018 Daniel O'Connor, All Rights Reserved"}%
+%META:FIELD{name="License" value="BSD ([[https://opensource.org/licenses/BSD-2-Clause][2 Clause BSD License]])"}%
+%META:FIELD{name="Repository" title="Repository" value="http://github.com/DanielO/DrawIOPlugin/"}%
+%META:FIELD{name="Home" value="https://foswiki.org/Extensions/%25$ROOTMODULE%25"}%
+%META:FIELD{name="Support" value="https://foswiki.org/Support/%25$ROOTMODULE%25"}%
+

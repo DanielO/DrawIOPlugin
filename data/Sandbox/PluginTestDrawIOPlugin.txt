@@ -2,6 +2,6 @@
 %META:TOPICPARENT{name="DrawIOPlugin"}%
 ---+!! Testing !DrawIOPlugin 
 
-SOME EXAMPLES OF THE PLUGIN
+%DRAWIO{"drawing name.svg"}%
 
 __Related:__ %SYSTEMWEB%.DrawIOPlugin
