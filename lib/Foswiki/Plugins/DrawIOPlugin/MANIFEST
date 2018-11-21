@@ -1,6 +1,5 @@
 !noci
 data/System/DrawIOPlugin.txt 0644 Documentation page
-data/System/VarEXAMPLETAG.txt 0644 Tag documentation
 data/Sandbox/PluginTestDrawIOPlugin.txt 0644 Examples
 lib/Foswiki/Plugins/DrawIOPlugin.pm 0444 Perl module
 lib/Foswiki/Plugins/DrawIOPlugin/Config.spec 0444 Configuration
